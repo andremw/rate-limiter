@@ -14,8 +14,24 @@ type bucket = handleRequest // right now, to the outside viewer, the bucket is j
 type makeBucket = (~store: store) => bucket
 
 let makeBucket: makeBucket = (~store) => (_request) => {
-  store.get()->Promise.thenResolve(tokens => switch tokens {
-  | 0 => Error()
-  | _ => Ok()
+  store.get()->Promise.then(tokens => switch tokens {
+  | 0 =>
+    Promise.resolve(Error())
+  | _ =>
+    store.decrement()->Promise.thenResolve(_ => Ok())
   })
+}
+
+module InMemoryStore = {
+  let make = (~initialValue) => {
+    let tokens = ref(initialValue)
+    let decrement = async () => {
+      tokens := tokens.contents - 1
+    }
+    let increment = async () => {
+      tokens := tokens.contents + 1
+    }
+    let get = () => Promise.resolve(tokens.contents)
+    {decrement, increment, get}
+  }
 }

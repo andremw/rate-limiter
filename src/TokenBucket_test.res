@@ -3,18 +3,27 @@ open Expect
 
 open TokenBucket
 
+let inSeries = (ops: array<unit => Promise.t<'a>>): Promise.t<array<'a>> => {
+  ops->Array.reduce(Promise.resolve([]), (chain, asyncOp) => {
+    chain->Promise.then(previousResults => {
+      asyncOp()->Promise.then(currentResult => {
+        Promise.resolve(Array.concat(previousResults, [currentResult]))
+      })
+    })
+  })
+}
+
 describe("Token Bucket Algorithm", () => {
   testPromise("When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket", () => {
-    let store = {
-      get: () => Promise.resolve(1),
-      decrement: () => Promise.resolve(),
-      increment: () => Promise.resolve(),
-    }
+    let store = InMemoryStore.make(~initialValue=1)
 
     let request = "ip.1"
     let handleRequest = makeBucket(~store)
-    request->handleRequest->Promise.thenResolve((handleResult) => {
-      handleResult->expect->toEqual(Ok())
+
+    [() => request->handleRequest, () => request->handleRequest]
+    ->inSeries
+    ->Promise.thenResolve((handleResults) => {
+          handleResults->expect->toEqual([Ok(), Error()])
     })
   })
 

@@ -6,18 +6,45 @@ var Curry = require("rescript/lib/js/curry.js");
 function makeBucket(store, _request) {
   return Curry._1(store.get, undefined).then(function (tokens) {
               if (tokens !== 0) {
-                return {
-                        TAG: /* Ok */0,
-                        _0: undefined
-                      };
+                return Curry._1(store.decrement, undefined).then(function (param) {
+                            return {
+                                    TAG: /* Ok */0,
+                                    _0: undefined
+                                  };
+                          });
               } else {
-                return {
-                        TAG: /* Error */1,
-                        _0: undefined
-                      };
+                return Promise.resolve({
+                            TAG: /* Error */1,
+                            _0: undefined
+                          });
               }
             });
 }
 
+function make(initialValue) {
+  var tokens = {
+    contents: initialValue
+  };
+  var decrement = async function (param) {
+    tokens.contents = tokens.contents - 1 | 0;
+  };
+  var increment = async function (param) {
+    tokens.contents = tokens.contents + 1 | 0;
+  };
+  var get = function (param) {
+    return Promise.resolve(tokens.contents);
+  };
+  return {
+          decrement: decrement,
+          increment: increment,
+          get: get
+        };
+}
+
+var InMemoryStore = {
+  make: make
+};
+
 exports.makeBucket = makeBucket;
+exports.InMemoryStore = InMemoryStore;
 /* No side effect */

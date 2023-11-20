@@ -2,29 +2,42 @@
 'use strict';
 
 var Jest = require("@glennsl/rescript-jest/src/jest.bs.js");
+var Curry = require("rescript/lib/js/curry.js");
+var Core__Array = require("@rescript/core/src/Core__Array.bs.js");
 var TokenBucket = require("./TokenBucket.bs.js");
+
+function inSeries(ops) {
+  return Core__Array.reduce(ops, Promise.resolve([]), (function (chain, asyncOp) {
+                return chain.then(function (previousResults) {
+                            return Curry._1(asyncOp, undefined).then(function (currentResult) {
+                                        return Promise.resolve(previousResults.concat([currentResult]));
+                                      });
+                          });
+              }));
+}
 
 Jest.describe("Token Bucket Algorithm", (function (param) {
         Jest.testPromise("When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket", undefined, (function (param) {
-                var store_decrement = function (param) {
-                  return Promise.resolve(undefined);
-                };
-                var store_increment = function (param) {
-                  return Promise.resolve(undefined);
-                };
-                var store_get = function (param) {
-                  return Promise.resolve(1);
-                };
-                var store = {
-                  decrement: store_decrement,
-                  increment: store_increment,
-                  get: store_get
-                };
-                return TokenBucket.makeBucket(store, "ip.1").then(function (handleResult) {
-                            return Jest.Expect.toEqual(Jest.Expect.expect(handleResult), {
-                                        TAG: /* Ok */0,
-                                        _0: undefined
-                                      });
+                var store = TokenBucket.InMemoryStore.make(1);
+                var request = "ip.1";
+                return inSeries([
+                              (function (param) {
+                                  return TokenBucket.makeBucket(store, request);
+                                }),
+                              (function (param) {
+                                  return TokenBucket.makeBucket(store, request);
+                                })
+                            ]).then(function (handleResults) {
+                            return Jest.Expect.toEqual(Jest.Expect.expect(handleResults), [
+                                        {
+                                          TAG: /* Ok */0,
+                                          _0: undefined
+                                        },
+                                        {
+                                          TAG: /* Error */1,
+                                          _0: undefined
+                                        }
+                                      ]);
                           });
               }));
         Jest.testPromise("When a request arrives and the bucket is empty, the request is declined", undefined, (function (param) {
@@ -51,4 +64,5 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
               }));
       }));
 
+exports.inSeries = inSeries;
 /*  Not a pure module */
