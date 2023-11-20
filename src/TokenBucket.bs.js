@@ -3,10 +3,10 @@
 
 var Curry = require("rescript/lib/js/curry.js");
 
-function makeBucket(store, _request) {
-  return Curry._1(store.get, undefined).then(function (tokens) {
+function makeBucket(store, request) {
+  return Curry._1(store.get, request).then(function (tokens) {
               if (tokens !== 0) {
-                return Curry._1(store.decrement, undefined).then(function (param) {
+                return Curry._1(store.decrement, request).then(function (param) {
                             return {
                                     TAG: /* Ok */0,
                                     _0: undefined
@@ -22,17 +22,31 @@ function makeBucket(store, _request) {
 }
 
 function make(initialValue) {
-  var tokens = {
-    contents: initialValue
+  var tokensDict = Object.fromEntries([]);
+  var decrement = async function (identifier) {
+    var tokens = tokensDict[identifier];
+    if (tokens !== undefined && tokens !== 0) {
+      tokensDict[identifier] = tokens - 1 | 0;
+      return ;
+    }
+    
   };
-  var decrement = async function (param) {
-    tokens.contents = tokens.contents - 1 | 0;
+  var increment = async function (identifier) {
+    var tokens = tokensDict[identifier];
+    if (tokens !== undefined) {
+      tokensDict[identifier] = tokens + 1 | 0;
+    } else {
+      tokensDict[identifier] = initialValue;
+    }
   };
-  var increment = async function (param) {
-    tokens.contents = tokens.contents + 1 | 0;
-  };
-  var get = function (param) {
-    return Promise.resolve(tokens.contents);
+  var get = async function (identifier) {
+    var tokens = tokensDict[identifier];
+    if (tokens !== undefined) {
+      return tokens;
+    } else {
+      tokensDict[identifier] = initialValue;
+      return initialValue;
+    }
   };
   return {
           decrement: decrement,
