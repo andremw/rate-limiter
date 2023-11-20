@@ -10,7 +10,8 @@
     "res:build": "rescript",
     "res:clean": "rescript clean",
     "res:dev": "rescript build -w",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "start": "node src/Main.bs.js"
   },
   "dependencies": {
     "@rescript/core": "*",
