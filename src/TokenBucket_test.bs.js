@@ -3,7 +3,7 @@
 
 var Jest = require("@glennsl/rescript-jest/src/jest.bs.js");
 
-function handleRequest(_request) {
+function makeBucket(param, _request) {
   return {
           TAG: /* Error */1,
           _0: undefined
@@ -22,5 +22,5 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
               }));
       }));
 
-exports.handleRequest = handleRequest;
+exports.makeBucket = makeBucket;
 /*  Not a pure module */
