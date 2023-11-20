@@ -10,5 +10,5 @@
   },
   "suffix": ".bs.js",
   "bsc-flags": ["-open RescriptCore"],
-  "bs-dependencies": ["@rescript/core"]
+  "bs-dependencies": ["@rescript/core", "rescript-express"]
 }

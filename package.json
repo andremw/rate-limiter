@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@rescript/core": "*",
-    "rescript": "*"
+    "express": "^4.18.2",
+    "rescript": "*",
+    "rescript-express": "^0.4.1"
   }
 }
