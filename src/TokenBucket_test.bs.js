@@ -5,49 +5,52 @@ var Jest = require("@glennsl/rescript-jest/src/jest.bs.js");
 var Curry = require("rescript/lib/js/curry.js");
 
 function makeBucket(store, _request) {
-  var match = Curry._1(store.get, undefined);
-  if (match !== 0) {
-    return {
-            TAG: /* Ok */0,
-            _0: undefined
-          };
-  } else {
-    return {
-            TAG: /* Error */1,
-            _0: undefined
-          };
-  }
+  return Curry._1(store.get, undefined).then(function (tokens) {
+              if (tokens !== 0) {
+                return {
+                        TAG: /* Ok */0,
+                        _0: undefined
+                      };
+              } else {
+                return {
+                        TAG: /* Error */1,
+                        _0: undefined
+                      };
+              }
+            });
 }
 
 Jest.describe("Token Bucket Algorithm", (function (param) {
-        Jest.test("When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket", (function (param) {
+        Jest.testPromise("When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket", undefined, (function (param) {
                 var store_decrement = function (param) {
-                  
+                  return Promise.resolve(undefined);
                 };
                 var store_increment = function (param) {
-                  
+                  return Promise.resolve(undefined);
                 };
                 var store_get = function (param) {
-                  return 1;
+                  return Promise.resolve(1);
                 };
                 var store = {
                   decrement: store_decrement,
                   increment: store_increment,
                   get: store_get
                 };
-                return Jest.Expect.toEqual(Jest.Expect.expect(makeBucket(store, "ip.1")), {
-                            TAG: /* Ok */0,
-                            _0: undefined
+                return makeBucket(store, "ip.1").then(function (handleResult) {
+                            return Jest.Expect.toEqual(Jest.Expect.expect(handleResult), {
+                                        TAG: /* Ok */0,
+                                        _0: undefined
+                                      });
                           });
               }));
-        Jest.test("When a request arrives and the bucket is empty, the request is declined", (function (param) {
-                var store_decrement = function (param) {
+        Jest.testPromise("When a request arrives and the bucket is empty, the request is declined", undefined, (function (param) {
+                var store_decrement = async function (param) {
                   
                 };
-                var store_increment = function (param) {
+                var store_increment = async function (param) {
                   
                 };
-                var store_get = function (param) {
+                var store_get = async function (param) {
                   return 0;
                 };
                 var store = {
@@ -55,9 +58,11 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
                   increment: store_increment,
                   get: store_get
                 };
-                return Jest.Expect.toEqual(Jest.Expect.expect(makeBucket(store, "some.ip")), {
-                            TAG: /* Error */1,
-                            _0: undefined
+                return makeBucket(store, "some.ip").then(function (handleResult) {
+                            return Jest.Expect.toEqual(Jest.Expect.expect(handleResult), {
+                                        TAG: /* Error */1,
+                                        _0: undefined
+                                      });
                           });
               }));
       }));
