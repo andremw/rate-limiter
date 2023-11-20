@@ -2,9 +2,11 @@
 'use strict';
 
 var Jest = require("@glennsl/rescript-jest/src/jest.bs.js");
+var Curry = require("rescript/lib/js/curry.js");
 
-function makeBucket(capacity, _request) {
-  if (capacity !== 0) {
+function makeBucket(store, _request) {
+  var match = Curry._1(store.get, undefined);
+  if (match !== 0) {
     return {
             TAG: /* Ok */0,
             _0: undefined
@@ -19,13 +21,41 @@ function makeBucket(capacity, _request) {
 
 Jest.describe("Token Bucket Algorithm", (function (param) {
         Jest.test("When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket", (function (param) {
-                return Jest.Expect.toEqual(Jest.Expect.expect(makeBucket(1, "ip.1")), {
+                var store_decrement = function (param) {
+                  
+                };
+                var store_increment = function (param) {
+                  
+                };
+                var store_get = function (param) {
+                  return 1;
+                };
+                var store = {
+                  decrement: store_decrement,
+                  increment: store_increment,
+                  get: store_get
+                };
+                return Jest.Expect.toEqual(Jest.Expect.expect(makeBucket(store, "ip.1")), {
                             TAG: /* Ok */0,
                             _0: undefined
                           });
               }));
         Jest.test("When a request arrives and the bucket is empty, the request is declined", (function (param) {
-                return Jest.Expect.toEqual(Jest.Expect.expect(makeBucket(0, "some.ip")), {
+                var store_decrement = function (param) {
+                  
+                };
+                var store_increment = function (param) {
+                  
+                };
+                var store_get = function (param) {
+                  return 0;
+                };
+                var store = {
+                  decrement: store_decrement,
+                  increment: store_increment,
+                  get: store_get
+                };
+                return Jest.Expect.toEqual(Jest.Expect.expect(makeBucket(store, "some.ip")), {
                             TAG: /* Error */1,
                             _0: undefined
                           });
