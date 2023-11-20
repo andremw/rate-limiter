@@ -18,6 +18,12 @@ function makeBucket(capacity, _request) {
 }
 
 Jest.describe("Token Bucket Algorithm", (function (param) {
+        Jest.test("When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket", (function (param) {
+                return Jest.Expect.toEqual(Jest.Expect.expect(makeBucket(1, "ip.1")), {
+                            TAG: /* Ok */0,
+                            _0: undefined
+                          });
+              }));
         Jest.test("When a request arrives and the bucket is empty, the request is declined", (function (param) {
                 return Jest.Expect.toEqual(Jest.Expect.expect(makeBucket(0, "some.ip")), {
                             TAG: /* Error */1,

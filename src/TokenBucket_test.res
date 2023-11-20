@@ -15,6 +15,12 @@ let makeBucket: makeBucket = (~capacity) => (_request) => {
 }
 
 describe("Token Bucket Algorithm", () => {
+  test("When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket", () => {
+    let request = "ip.1"
+    let handleRequest = makeBucket(~capacity=1)
+    request->handleRequest->expect->toEqual(Ok())
+  })
+
   test("When a request arrives and the bucket is empty, the request is declined", () => {
     let request = "some.ip"
     let handleRequest = makeBucket(~capacity=0)
