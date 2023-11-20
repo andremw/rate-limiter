@@ -1,3 +1,5 @@
+https://codingchallenges.fyi/challenges/challenge-rate-limiter/
+
 # ReScript Project Template
 
 The only official ReScript starter template. Clone this repo to get started.
