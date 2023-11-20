@@ -2,23 +2,7 @@
 'use strict';
 
 var Jest = require("@glennsl/rescript-jest/src/jest.bs.js");
-var Curry = require("rescript/lib/js/curry.js");
-
-function makeBucket(store, _request) {
-  return Curry._1(store.get, undefined).then(function (tokens) {
-              if (tokens !== 0) {
-                return {
-                        TAG: /* Ok */0,
-                        _0: undefined
-                      };
-              } else {
-                return {
-                        TAG: /* Error */1,
-                        _0: undefined
-                      };
-              }
-            });
-}
+var TokenBucket = require("./TokenBucket.bs.js");
 
 Jest.describe("Token Bucket Algorithm", (function (param) {
         Jest.testPromise("When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket", undefined, (function (param) {
@@ -36,7 +20,7 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
                   increment: store_increment,
                   get: store_get
                 };
-                return makeBucket(store, "ip.1").then(function (handleResult) {
+                return TokenBucket.makeBucket(store, "ip.1").then(function (handleResult) {
                             return Jest.Expect.toEqual(Jest.Expect.expect(handleResult), {
                                         TAG: /* Ok */0,
                                         _0: undefined
@@ -58,7 +42,7 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
                   increment: store_increment,
                   get: store_get
                 };
-                return makeBucket(store, "some.ip").then(function (handleResult) {
+                return TokenBucket.makeBucket(store, "some.ip").then(function (handleResult) {
                             return Jest.Expect.toEqual(Jest.Expect.expect(handleResult), {
                                         TAG: /* Error */1,
                                         _0: undefined
@@ -67,5 +51,4 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
               }));
       }));
 
-exports.makeBucket = makeBucket;
 /*  Not a pure module */

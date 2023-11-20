@@ -12,3 +12,10 @@ type requestResult = Result.t<unit, unit> // for now, just a simple result with 
 type handleRequest = (request) => Promise.t<requestResult>
 type bucket = handleRequest // right now, to the outside viewer, the bucket is just the ability to handle a request
 type makeBucket = (~store: store) => bucket
+
+let makeBucket: makeBucket = (~store) => (_request) => {
+  store.get()->Promise.thenResolve(tokens => switch tokens {
+  | 0 => Error()
+  | _ => Ok()
+  })
+}
