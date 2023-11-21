@@ -3,6 +3,7 @@
 
 var Jest = require("@glennsl/rescript-jest/src/jest.bs.js");
 var Curry = require("rescript/lib/js/curry.js");
+var Store = require("./Store.bs.js");
 var Core__Array = require("@rescript/core/src/Core__Array.bs.js");
 var TokenBucket = require("./TokenBucket.bs.js");
 
@@ -19,7 +20,7 @@ function inSeries(ops) {
 Jest.describe("Token Bucket Algorithm", (function (param) {
         Jest.describe("When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket", (function (param) {
                 Jest.testPromise("Handles request from single IP", undefined, (function (param) {
-                        var store = TokenBucket.InMemoryStore.make(1);
+                        var store = Store.InMemoryStore.make(1);
                         var request = "ip.1";
                         return inSeries([
                                       (function (param) {
@@ -42,7 +43,7 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
                                   });
                       }));
                 Jest.testPromise("Handles requests from different IPs, decrementing each of their token buckets", undefined, (function (param) {
-                        var store = TokenBucket.InMemoryStore.make(1);
+                        var store = Store.InMemoryStore.make(1);
                         var requestIP1 = "ip.1";
                         return inSeries([
                                       (function (param) {

@@ -21,44 +21,5 @@ function makeBucket(store, request) {
             });
 }
 
-function make(initialValue) {
-  var tokensDict = Object.fromEntries([]);
-  var decrement = async function (identifier) {
-    var tokens = tokensDict[identifier];
-    if (tokens !== undefined && tokens !== 0) {
-      tokensDict[identifier] = tokens - 1 | 0;
-      return ;
-    }
-    
-  };
-  var increment = async function (identifier) {
-    var tokens = tokensDict[identifier];
-    if (tokens !== undefined) {
-      tokensDict[identifier] = tokens + 1 | 0;
-    } else {
-      tokensDict[identifier] = initialValue;
-    }
-  };
-  var get = async function (identifier) {
-    var tokens = tokensDict[identifier];
-    if (tokens !== undefined) {
-      return tokens;
-    } else {
-      tokensDict[identifier] = initialValue;
-      return initialValue;
-    }
-  };
-  return {
-          decrement: decrement,
-          increment: increment,
-          get: get
-        };
-}
-
-var InMemoryStore = {
-  make: make
-};
-
 exports.makeBucket = makeBucket;
-exports.InMemoryStore = InMemoryStore;
 /* No side effect */

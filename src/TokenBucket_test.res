@@ -2,6 +2,7 @@ open Jest
 open Expect
 
 open TokenBucket
+open Store
 
 let inSeries = (ops: array<unit => Promise.t<'a>>): Promise.t<array<'a>> => {
   ops->Array.reduce(Promise.resolve([]), (chain, asyncOp) => {
