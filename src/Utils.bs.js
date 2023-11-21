@@ -6,5 +6,10 @@ function timeDiffInSeconds(date1, date2) {
   return (Math.abs(date1.getTime() - date2.getTime()) | 0) / 1000 | 0;
 }
 
+function limitTo(max, value) {
+  return Math.max(0.0, Math.min(max, value)) | 0;
+}
+
 exports.timeDiffInSeconds = timeDiffInSeconds;
+exports.limitTo = limitTo;
 /* No side effect */

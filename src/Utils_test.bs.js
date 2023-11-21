@@ -10,4 +10,8 @@ Jest.test("timeDiffInSeconds", (function (param) {
         return Jest.Expect.toBe(Jest.Expect.expect(Utils.timeDiffInSeconds(date1, date2)), 10);
       }));
 
+Jest.test("limit", (function (param) {
+        return Jest.Expect.toBe(Jest.Expect.expect(Utils.limitTo(10, 100)), 10);
+      }));
+
 /*  Not a pure module */

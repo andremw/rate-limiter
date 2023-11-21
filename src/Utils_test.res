@@ -23,3 +23,8 @@ test("timeDiffInSeconds", () => {
 
   timeDiffInSeconds(date1, date2)->expect->toBe(10)
 })
+
+test("limit", () => {
+  let limit10 = limitTo(10)
+  limit10(100)->expect->toBe(10)
+})
