@@ -3,10 +3,10 @@
 
 var Curry = require("rescript/lib/js/curry.js");
 
-function makeBucket(store, get, decrement, request) {
+function makeBucket(store, get, set, request) {
   return Curry._2(get, store, request).then(function (tokens) {
               if (tokens !== 0) {
-                return Curry._2(decrement, store, request).then(function (param) {
+                return Curry._3(set, store, request, tokens - 1 | 0).then(function (param) {
                             return {
                                     TAG: /* Ok */0,
                                     _0: undefined

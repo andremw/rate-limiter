@@ -6,21 +6,6 @@ module InMemoryStore = {
     (tokensDict, initialValue)
   }
 
-  let decrement = async ((tokensDict, _), identifier) => {
-    switch tokensDict->Dict.get(identifier) {
-    | None
-    | Some(0) => ()
-    | Some(tokens) => tokensDict->Dict.set(identifier, tokens - 1)
-    }
-  }
-
-  let increment = async ((tokensDict, initialValue), identifier) => {
-    switch tokensDict->Dict.get(identifier) {
-    | None => tokensDict->Dict.set(identifier, initialValue)
-    | Some(tokens) => tokensDict->Dict.set(identifier, tokens + 1)
-    }
-  }
-
   let get = async ((tokensDict, initialValue), identifier) => {
     switch tokensDict->Dict.get(identifier) {
     | None =>
@@ -28,5 +13,9 @@ module InMemoryStore = {
       initialValue
     | Some(tokens) => tokens
     }
+  }
+
+  let set = async ((tokensDict, _), identifier, value) => {
+    tokensDict->Dict.set(identifier, value)
   }
 }

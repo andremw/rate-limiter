@@ -7,14 +7,14 @@ type bucket = handleRequest // right now, to the outside viewer, the bucket is j
 let makeBucket = (
   ~store,
   ~get,
-  ~decrement,
+  ~set,
   request,
 ) => {
   store->get(request)
   ->Promise.then(tokens =>
     switch tokens {
     | 0 => Promise.resolve(Error())
-    | _ => store->decrement(request)->Promise.thenResolve(_ => Ok())
+    | tokens => store->set(request, tokens - 1)->Promise.thenResolve(_ => Ok())
     }
   )
 }

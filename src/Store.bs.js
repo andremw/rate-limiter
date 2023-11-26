@@ -11,26 +11,6 @@ function make(initialValue) {
         ];
 }
 
-async function decrement(param, identifier) {
-  var tokensDict = param[0];
-  var tokens = tokensDict[identifier];
-  if (tokens !== undefined && tokens !== 0) {
-    tokensDict[identifier] = tokens - 1 | 0;
-    return ;
-  }
-  
-}
-
-async function increment(param, identifier) {
-  var tokensDict = param[0];
-  var tokens = tokensDict[identifier];
-  if (tokens !== undefined) {
-    tokensDict[identifier] = tokens + 1 | 0;
-  } else {
-    tokensDict[identifier] = param[1];
-  }
-}
-
 async function get(param, identifier) {
   var initialValue = param[1];
   var tokensDict = param[0];
@@ -43,11 +23,14 @@ async function get(param, identifier) {
   }
 }
 
+async function set(param, identifier, value) {
+  param[0][identifier] = value;
+}
+
 var InMemoryStore = {
   make: make,
-  decrement: decrement,
-  increment: increment,
-  get: get
+  get: get,
+  set: set
 };
 
 exports.InMemoryStore = InMemoryStore;

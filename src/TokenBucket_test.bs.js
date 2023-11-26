@@ -23,7 +23,7 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
                         var store = Store.InMemoryStore.make(1);
                         var request = "ip.1";
                         var handleRequest = function (param) {
-                          return TokenBucket.makeBucket(store, Store.InMemoryStore.get, Store.InMemoryStore.decrement, param);
+                          return TokenBucket.makeBucket(store, Store.InMemoryStore.get, Store.InMemoryStore.set, param);
                         };
                         return inSeries([
                                       (function (param) {
@@ -49,7 +49,7 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
                         var store = Store.InMemoryStore.make(1);
                         var requestIP1 = "ip.1";
                         var handleRequest = function (param) {
-                          return TokenBucket.makeBucket(store, Store.InMemoryStore.get, Store.InMemoryStore.decrement, param);
+                          return TokenBucket.makeBucket(store, Store.InMemoryStore.get, Store.InMemoryStore.set, param);
                         };
                         return inSeries([
                                       (function (param) {
@@ -82,7 +82,7 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
         Jest.testPromise("When a request arrives and the bucket is empty, the request is declined", undefined, (function (param) {
                 var store = Store.InMemoryStore.make(0);
                 var handleRequest = function (param) {
-                  return TokenBucket.makeBucket(store, Store.InMemoryStore.get, Store.InMemoryStore.decrement, param);
+                  return TokenBucket.makeBucket(store, Store.InMemoryStore.get, Store.InMemoryStore.set, param);
                 };
                 return handleRequest("some.ip").then(function (handleResult) {
                             return Jest.Expect.toEqual(Jest.Expect.expect(handleResult), {
