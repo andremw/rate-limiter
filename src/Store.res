@@ -1,13 +1,3 @@
-// private API, hide with interface file
-// public store will not expose the increment fn
-module type StoreDefinition = {
-  type t
-  let make: (~initialValue: int) => t
-  let get: (t, string) => Promise.t<int>
-  let decrement: (t, string) => Promise.t<unit>
-  let increment: (t, string) => Promise.t<unit>
-}
-
 module InMemoryStore = {
   type initialValue = int
   type t = (Js.Dict.t<int>, initialValue)

@@ -5,19 +5,16 @@ type handleRequest = request => Promise.t<requestResult>
 type bucket = handleRequest // right now, to the outside viewer, the bucket is just the ability to handle a request
 
 let makeBucket = (
-  type store,
-  storeModule: module(Store.StoreDefinition with type t = store),
-  ~store: store,
+  ~store,
+  ~get,
+  ~decrement,
   request,
 ) => {
-  let module(S) = storeModule
-
-  store
-  ->S.get(request)
+  store->get(request)
   ->Promise.then(tokens =>
     switch tokens {
     | 0 => Promise.resolve(Error())
-    | _ => store->S.decrement(request)->Promise.thenResolve(_ => Ok())
+    | _ => store->decrement(request)->Promise.thenResolve(_ => Ok())
     }
   )
 }

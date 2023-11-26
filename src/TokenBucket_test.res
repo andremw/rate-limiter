@@ -26,7 +26,7 @@ describe("Token Bucket Algorithm", () => {
           let store = InMemoryStore.make(~initialValue=1)
 
           let request = "ip.1"
-          let handleRequest = makeBucket(module(InMemoryStore), ~store)
+          let handleRequest = makeBucket(~store, ~get=InMemoryStore.get, ~decrement=InMemoryStore.decrement)
 
           [() => request->handleRequest, () => request->handleRequest]
           ->inSeries
@@ -45,7 +45,7 @@ describe("Token Bucket Algorithm", () => {
 
           let requestIP1 = "ip.1"
           let requestIP2 = "ip.2"
-          let handleRequest = makeBucket(module(InMemoryStore), ~store)
+          let handleRequest = makeBucket(~store, ~get=InMemoryStore.get, ~decrement=InMemoryStore.decrement)
 
           [
             () => requestIP1->handleRequest,
@@ -66,7 +66,7 @@ describe("Token Bucket Algorithm", () => {
   testPromise("When a request arrives and the bucket is empty, the request is declined", () => {
     let store = InMemoryStore.make(~initialValue=0)
     let request = "some.ip"
-    let handleRequest = makeBucket(module(InMemoryStore), ~store)
+    let handleRequest = makeBucket(~store, ~get=InMemoryStore.get, ~decrement=InMemoryStore.decrement)
     request
     ->handleRequest
     ->Promise.thenResolve(
