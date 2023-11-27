@@ -4,8 +4,10 @@
 var Jest = require("@glennsl/rescript-jest/src/jest.bs.js");
 var Curry = require("rescript/lib/js/curry.js");
 var Store = require("./Store.bs.js");
+var Caml_option = require("rescript/lib/js/caml_option.js");
 var Core__Array = require("@rescript/core/src/Core__Array.bs.js");
 var TokenBucket = require("./TokenBucket.bs.js");
+var Core__Option = require("@rescript/core/src/Core__Option.bs.js");
 
 function inSeries(ops) {
   return Core__Array.reduce(ops, Promise.resolve([]), (function (chain, asyncOp) {
@@ -20,10 +22,13 @@ function inSeries(ops) {
 Jest.describe("Token Bucket Algorithm", (function (param) {
         Jest.describe("When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket", (function (param) {
                 Jest.testPromise("Handles request from single IP", undefined, (function (param) {
-                        var store = Store.InMemoryStore.make(1);
+                        var store = Store.InMemoryStore.make(undefined);
                         var request = "ip.1";
+                        var getTime = function (param) {
+                          return 1000.0;
+                        };
                         var handleRequest = function (param) {
-                          return TokenBucket.makeBucket(store, Store.InMemoryStore.get, Store.InMemoryStore.set, param);
+                          return TokenBucket.makeBucket(store, getTime, 1, param);
                         };
                         return inSeries([
                                       (function (param) {
@@ -46,10 +51,13 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
                                   });
                       }));
                 Jest.testPromise("Handles requests from different IPs, decrementing each of their token buckets", undefined, (function (param) {
-                        var store = Store.InMemoryStore.make(1);
+                        var store = Store.InMemoryStore.make(undefined);
                         var requestIP1 = "ip.1";
+                        var getTime = function (param) {
+                          return 1000.0;
+                        };
                         var handleRequest = function (param) {
-                          return TokenBucket.makeBucket(store, Store.InMemoryStore.get, Store.InMemoryStore.set, param);
+                          return TokenBucket.makeBucket(store, getTime, 1, param);
                         };
                         return inSeries([
                                       (function (param) {
@@ -80,15 +88,58 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
                       }));
               }));
         Jest.testPromise("When a request arrives and the bucket is empty, the request is declined", undefined, (function (param) {
-                var store = Store.InMemoryStore.make(0);
+                var store = Store.InMemoryStore.make(undefined);
+                var getTime = function (param) {
+                  return 1000.0;
+                };
                 var handleRequest = function (param) {
-                  return TokenBucket.makeBucket(store, Store.InMemoryStore.get, Store.InMemoryStore.set, param);
+                  return TokenBucket.makeBucket(store, getTime, 0, param);
                 };
                 return handleRequest("some.ip").then(function (handleResult) {
                             return Jest.Expect.toEqual(Jest.Expect.expect(handleResult), {
                                         TAG: /* Error */1,
                                         _0: undefined
                                       });
+                          });
+              }));
+        Jest.testPromise("Refils 1 token per second", undefined, (function (param) {
+                var store = Store.InMemoryStore.make(undefined);
+                var request = "some.ip";
+                var mockFn = jest.fn();
+                mockFn.mockReturnValueOnce(1000.0);
+                mockFn.mockReturnValueOnce(1200.0);
+                mockFn.mockReturnValueOnce(2000.0);
+                var getTime = function (param) {
+                  return Core__Option.getOr(Caml_option.undefined_to_opt(mockFn(undefined)), 0.0);
+                };
+                var handleRequest = function (param) {
+                  return TokenBucket.makeBucket(store, getTime, 1, param);
+                };
+                return inSeries([
+                              (function (param) {
+                                  return handleRequest(request);
+                                }),
+                              (function (param) {
+                                  return handleRequest(request);
+                                }),
+                              (function (param) {
+                                  return handleRequest(request);
+                                })
+                            ]).then(function (results) {
+                            return Jest.Expect.toEqual(Jest.Expect.expect(results), [
+                                        {
+                                          TAG: /* Ok */0,
+                                          _0: undefined
+                                        },
+                                        {
+                                          TAG: /* Error */1,
+                                          _0: undefined
+                                        },
+                                        {
+                                          TAG: /* Ok */0,
+                                          _0: undefined
+                                        }
+                                      ]);
                           });
               }));
       }));

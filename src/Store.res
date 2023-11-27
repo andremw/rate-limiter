@@ -1,21 +1,27 @@
 module InMemoryStore = {
-  type initialValue = int
-  type t = (Js.Dict.t<int>, initialValue)
-  let make = (~initialValue): t => {
-    let tokensDict = Dict.fromArray([])
-    (tokensDict, initialValue)
+  type data = {
+    requests: int,
+    firstRequestAt: float,
   }
-
-  let get = async ((tokensDict, initialValue), identifier) => {
-    switch tokensDict->Dict.get(identifier) {
-    | None =>
-      tokensDict->Dict.set(identifier, initialValue)
-      initialValue
-    | Some(tokens) => tokens
+  type t = {
+    get: string => promise<option<data>>,
+    set: (string, data) => promise<unit>,
+  }
+  let make = () => {
+    let dict = Dict.fromArray([])
+    {
+      get: (key) => dict->Dict.get(key)->Promise.resolve,
+      set: (key, value) => {
+        dict->Dict.set(key, value)
+        Promise.resolve()
+      },
     }
   }
 
-  let set = async ((tokensDict, _), identifier, value) => {
-    tokensDict->Dict.set(identifier, value)
+  let get = async (dict, identifier) =>
+    dict->Dict.get(identifier)
+
+  let set = async (dict, identifier, value) => {
+    dict->Dict.set(identifier, value)
   }
 }
