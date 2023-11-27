@@ -10,6 +10,23 @@ function limitTo(max, value) {
   return Math.max(0.0, Math.min(max, value)) | 0;
 }
 
+function make(num) {
+  if (num > 0) {
+    return num;
+  }
+  
+}
+
+function value(x) {
+  return x;
+}
+
+var NaturalNumber = {
+  make: make,
+  value: value
+};
+
 exports.timeDiffInSeconds = timeDiffInSeconds;
 exports.limitTo = limitTo;
+exports.NaturalNumber = NaturalNumber;
 /* No side effect */
