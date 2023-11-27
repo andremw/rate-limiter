@@ -4,6 +4,8 @@ open Expect
 open TokenBucket
 open Store
 
+module NaturalNumber = Utils.NaturalNumber
+
 let inSeries = (ops: array<unit => Promise.t<'a>>): Promise.t<array<'a>> => {
   ops->Array.reduce(Promise.resolve([]), (chain, asyncOp) => {
     chain->Promise.then(previousResults => {
@@ -14,6 +16,11 @@ let inSeries = (ops: array<unit => Promise.t<'a>>): Promise.t<array<'a>> => {
       )
     })
   })
+}
+
+let unpackOptionalDependency = (value: option<'a>, fn) => switch value {
+| Some(value) => fn(value)
+| None => raise(Js.Exn.raiseError("Should never happen"))
 }
 
 describe("Token Bucket Algorithm", () => {
@@ -27,16 +34,18 @@ describe("Token Bucket Algorithm", () => {
 
           let request = "ip.1"
           let getTime = () => 1000.0
-          let capacity = 1
-          let handleRequest = makeBucket(~store, ~getTime, ~capacity)
+          let capacity = 1->NaturalNumber.make
+          capacity->unpackOptionalDependency((capacity) => {
+            let handleRequest = makeBucket(~store, ~getTime, ~capacity)
 
-          [() => request->handleRequest, () => request->handleRequest]
-          ->inSeries
-          ->Promise.thenResolve(
-            handleResults => {
-              handleResults->expect->toEqual([Ok(), Error()])
-            },
-          )
+            [() => request->handleRequest, () => request->handleRequest]
+            ->inSeries
+            ->Promise.thenResolve(
+              handleResults => {
+                handleResults->expect->toEqual([Ok(), Error()])
+              },
+            )
+          })
         },
       )
 
@@ -48,39 +57,26 @@ describe("Token Bucket Algorithm", () => {
           let requestIP1 = "ip.1"
           let requestIP2 = "ip.2"
           let getTime = () => 1000.0
-          let capacity = 1
-          let handleRequest = makeBucket(~store, ~getTime, ~capacity)
+          let capacity = 1->NaturalNumber.make
+          capacity->unpackOptionalDependency((capacity) => {
+            let handleRequest = makeBucket(~store, ~getTime, ~capacity)
 
-          [
-            () => requestIP1->handleRequest,
-            () => requestIP2->handleRequest,
-            () => requestIP1->handleRequest,
-          ]
-          ->inSeries
-          ->Promise.thenResolve(
-            handleResults => {
-              handleResults->expect->toEqual([Ok(), Ok(), Error()])
-            },
-          )
+            [
+              () => requestIP1->handleRequest,
+              () => requestIP2->handleRequest,
+              () => requestIP1->handleRequest,
+            ]
+            ->inSeries
+            ->Promise.thenResolve(
+              handleResults => {
+                handleResults->expect->toEqual([Ok(), Ok(), Error()])
+              },
+            )
+          })
         },
       )
     },
   )
-
-  testPromise("When a request arrives and the bucket is empty, the request is declined", () => {
-    let store = InMemoryStore.make()
-    let request = "some.ip"
-    let getTime = () => 1000.0
-    let capacity = 0
-    let handleRequest = makeBucket(~store, ~getTime, ~capacity)
-    request
-    ->handleRequest
-    ->Promise.thenResolve(
-      handleResult => {
-        handleResult->expect->toEqual(Error())
-      },
-    )
-  })
 
   testPromise("Refils 1 token per second", () => {
     let store = InMemoryStore.make()
@@ -91,15 +87,17 @@ describe("Token Bucket Algorithm", () => {
     let _timeBefore2Seconds = mockFn->MockJs.mockReturnValueOnce(Js.Undefined.return(1200.0))
     let _timeAfter2Seconds = mockFn->MockJs.mockReturnValueOnce(Js.Undefined.return(2000.0))
     let getTime = () => fn(.())->Js.Undefined.toOption->Option.getOr(0.0)
-    let capacity = 1
-    let handleRequest = makeBucket(~store, ~getTime, ~capacity)
+    let capacity = 1->NaturalNumber.make
+    capacity->unpackOptionalDependency((capacity) => {
+      let handleRequest = makeBucket(~store, ~getTime, ~capacity)
 
-    [() => request->handleRequest, () => request->handleRequest, () => request->handleRequest]
-    ->inSeries
-    ->Promise.thenResolve(
-      results => {
-        results->expect->toEqual([Ok(), Error(), Ok()])
-      },
-    )
+      [() => request->handleRequest, () => request->handleRequest, () => request->handleRequest]
+      ->inSeries
+      ->Promise.thenResolve(
+        results => {
+          results->expect->toEqual([Ok(), Error(), Ok()])
+        },
+      )
+    })
   })
 })

@@ -4,6 +4,8 @@
 var Jest = require("@glennsl/rescript-jest/src/jest.bs.js");
 var Curry = require("rescript/lib/js/curry.js");
 var Store = require("./Store.bs.js");
+var Utils = require("./Utils.bs.js");
+var Js_exn = require("rescript/lib/js/js_exn.js");
 var Caml_option = require("rescript/lib/js/caml_option.js");
 var Core__Array = require("@rescript/core/src/Core__Array.bs.js");
 var TokenBucket = require("./TokenBucket.bs.js");
@@ -19,6 +21,13 @@ function inSeries(ops) {
               }));
 }
 
+function unpackOptionalDependency(value, fn) {
+  if (value !== undefined) {
+    return Curry._1(fn, Caml_option.valFromOption(value));
+  }
+  throw Js_exn.raiseError("Should never happen");
+}
+
 Jest.describe("Token Bucket Algorithm", (function (param) {
         Jest.describe("When a request arrives and the bucket contains tokens, the request is handled and a token is removed from the bucket", (function (param) {
                 Jest.testPromise("Handles request from single IP", undefined, (function (param) {
@@ -27,28 +36,31 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
                         var getTime = function (param) {
                           return 1000.0;
                         };
-                        var handleRequest = function (param) {
-                          return TokenBucket.makeBucket(store, getTime, 1, param);
-                        };
-                        return inSeries([
-                                      (function (param) {
-                                          return handleRequest(request);
-                                        }),
-                                      (function (param) {
-                                          return handleRequest(request);
-                                        })
-                                    ]).then(function (handleResults) {
-                                    return Jest.Expect.toEqual(Jest.Expect.expect(handleResults), [
-                                                {
-                                                  TAG: /* Ok */0,
-                                                  _0: undefined
-                                                },
-                                                {
-                                                  TAG: /* Error */1,
-                                                  _0: undefined
-                                                }
-                                              ]);
-                                  });
+                        var capacity = Utils.NaturalNumber.make(1);
+                        return unpackOptionalDependency(capacity, (function (capacity) {
+                                      var handleRequest = function (param) {
+                                        return TokenBucket.makeBucket(store, getTime, capacity, param);
+                                      };
+                                      return inSeries([
+                                                    (function (param) {
+                                                        return handleRequest(request);
+                                                      }),
+                                                    (function (param) {
+                                                        return handleRequest(request);
+                                                      })
+                                                  ]).then(function (handleResults) {
+                                                  return Jest.Expect.toEqual(Jest.Expect.expect(handleResults), [
+                                                              {
+                                                                TAG: /* Ok */0,
+                                                                _0: undefined
+                                                              },
+                                                              {
+                                                                TAG: /* Error */1,
+                                                                _0: undefined
+                                                              }
+                                                            ]);
+                                                });
+                                    }));
                       }));
                 Jest.testPromise("Handles requests from different IPs, decrementing each of their token buckets", undefined, (function (param) {
                         var store = Store.InMemoryStore.make(undefined);
@@ -56,51 +68,39 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
                         var getTime = function (param) {
                           return 1000.0;
                         };
-                        var handleRequest = function (param) {
-                          return TokenBucket.makeBucket(store, getTime, 1, param);
-                        };
-                        return inSeries([
-                                      (function (param) {
-                                          return handleRequest(requestIP1);
-                                        }),
-                                      (function (param) {
-                                          return handleRequest("ip.2");
-                                        }),
-                                      (function (param) {
-                                          return handleRequest(requestIP1);
-                                        })
-                                    ]).then(function (handleResults) {
-                                    return Jest.Expect.toEqual(Jest.Expect.expect(handleResults), [
-                                                {
-                                                  TAG: /* Ok */0,
-                                                  _0: undefined
-                                                },
-                                                {
-                                                  TAG: /* Ok */0,
-                                                  _0: undefined
-                                                },
-                                                {
-                                                  TAG: /* Error */1,
-                                                  _0: undefined
-                                                }
-                                              ]);
-                                  });
+                        var capacity = Utils.NaturalNumber.make(1);
+                        return unpackOptionalDependency(capacity, (function (capacity) {
+                                      var handleRequest = function (param) {
+                                        return TokenBucket.makeBucket(store, getTime, capacity, param);
+                                      };
+                                      return inSeries([
+                                                    (function (param) {
+                                                        return handleRequest(requestIP1);
+                                                      }),
+                                                    (function (param) {
+                                                        return handleRequest("ip.2");
+                                                      }),
+                                                    (function (param) {
+                                                        return handleRequest(requestIP1);
+                                                      })
+                                                  ]).then(function (handleResults) {
+                                                  return Jest.Expect.toEqual(Jest.Expect.expect(handleResults), [
+                                                              {
+                                                                TAG: /* Ok */0,
+                                                                _0: undefined
+                                                              },
+                                                              {
+                                                                TAG: /* Ok */0,
+                                                                _0: undefined
+                                                              },
+                                                              {
+                                                                TAG: /* Error */1,
+                                                                _0: undefined
+                                                              }
+                                                            ]);
+                                                });
+                                    }));
                       }));
-              }));
-        Jest.testPromise("When a request arrives and the bucket is empty, the request is declined", undefined, (function (param) {
-                var store = Store.InMemoryStore.make(undefined);
-                var getTime = function (param) {
-                  return 1000.0;
-                };
-                var handleRequest = function (param) {
-                  return TokenBucket.makeBucket(store, getTime, 0, param);
-                };
-                return handleRequest("some.ip").then(function (handleResult) {
-                            return Jest.Expect.toEqual(Jest.Expect.expect(handleResult), {
-                                        TAG: /* Error */1,
-                                        _0: undefined
-                                      });
-                          });
               }));
         Jest.testPromise("Refils 1 token per second", undefined, (function (param) {
                 var store = Store.InMemoryStore.make(undefined);
@@ -112,37 +112,44 @@ Jest.describe("Token Bucket Algorithm", (function (param) {
                 var getTime = function (param) {
                   return Core__Option.getOr(Caml_option.undefined_to_opt(mockFn(undefined)), 0.0);
                 };
-                var handleRequest = function (param) {
-                  return TokenBucket.makeBucket(store, getTime, 1, param);
-                };
-                return inSeries([
-                              (function (param) {
-                                  return handleRequest(request);
-                                }),
-                              (function (param) {
-                                  return handleRequest(request);
-                                }),
-                              (function (param) {
-                                  return handleRequest(request);
-                                })
-                            ]).then(function (results) {
-                            return Jest.Expect.toEqual(Jest.Expect.expect(results), [
-                                        {
-                                          TAG: /* Ok */0,
-                                          _0: undefined
-                                        },
-                                        {
-                                          TAG: /* Error */1,
-                                          _0: undefined
-                                        },
-                                        {
-                                          TAG: /* Ok */0,
-                                          _0: undefined
-                                        }
-                                      ]);
-                          });
+                var capacity = Utils.NaturalNumber.make(1);
+                return unpackOptionalDependency(capacity, (function (capacity) {
+                              var handleRequest = function (param) {
+                                return TokenBucket.makeBucket(store, getTime, capacity, param);
+                              };
+                              return inSeries([
+                                            (function (param) {
+                                                return handleRequest(request);
+                                              }),
+                                            (function (param) {
+                                                return handleRequest(request);
+                                              }),
+                                            (function (param) {
+                                                return handleRequest(request);
+                                              })
+                                          ]).then(function (results) {
+                                          return Jest.Expect.toEqual(Jest.Expect.expect(results), [
+                                                      {
+                                                        TAG: /* Ok */0,
+                                                        _0: undefined
+                                                      },
+                                                      {
+                                                        TAG: /* Error */1,
+                                                        _0: undefined
+                                                      },
+                                                      {
+                                                        TAG: /* Ok */0,
+                                                        _0: undefined
+                                                      }
+                                                    ]);
+                                        });
+                            }));
               }));
       }));
 
+var NaturalNumber;
+
+exports.NaturalNumber = NaturalNumber;
 exports.inSeries = inSeries;
+exports.unpackOptionalDependency = unpackOptionalDependency;
 /*  Not a pure module */

@@ -9,23 +9,26 @@ open Store.InMemoryStore
 let makeBucket = (
   ~store: Store.InMemoryStore.t,
   ~getTime,
-  ~capacity,
+  ~capacity: Utils.NaturalNumber.t,
   request,
 ) => {
-  store.get(request)
-  ->Promise.then(data =>
+  store.get(request)->Promise.then(data =>
     switch data {
     | None =>
-      capacity > 0
-      ? store.set(request, {
-        requests: 1,
-        firstRequestAt: getTime(),
-      })->Promise.thenResolve(_ => Ok())
-      : Promise.resolve(Error())
-    | Some({ requests, firstRequestAt }) =>
-      let maxRequests = capacity + Utils.timeDiffInSeconds(Date.fromTime(getTime()), Date.fromTime(firstRequestAt))
+      store.set(
+        request,
+        {
+          requests: 1,
+          firstRequestAt: getTime(),
+        },
+      )->Promise.thenResolve(_ => Ok())
+    | Some({requests, firstRequestAt}) =>
+      let maxRequests =
+        capacity->Utils.NaturalNumber.value +
+          Utils.timeDiffInSeconds(Date.fromTime(getTime()), Date.fromTime(firstRequestAt))
       switch maxRequests - requests > 0 {
-      | true => store.set(request, { requests: requests + 1, firstRequestAt })->Promise.thenResolve(_ => Ok())
+      | true =>
+        store.set(request, {requests: requests + 1, firstRequestAt})->Promise.thenResolve(_ => Ok())
       | false => Promise.resolve(Error())
       }
     }
