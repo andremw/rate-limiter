@@ -11,7 +11,6 @@ let rateLimiter = TokenBucket.makeBucket(
   ~capacity=10,
 )
 app->get("/limited", (req, res) => {
-  Console.log2("IP: ", req->ip)
   let _ = req
     ->ip
     ->rateLimiter

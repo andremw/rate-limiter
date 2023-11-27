@@ -20,7 +20,6 @@ function rateLimiter(param) {
 }
 
 app.get("/limited", (function (req, res) {
-        console.log("IP: ", req.ip);
         rateLimiter(req.ip).then(function (result) {
               if (result.TAG === /* Ok */0) {
                 return res.status(200).send("Limited, don't over use me!");
