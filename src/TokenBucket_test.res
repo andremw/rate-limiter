@@ -27,8 +27,8 @@ describe("Token Bucket Algorithm", () => {
 
           let request = "ip.1"
           let getTime = () => 1000.0
-          let initialTokens = 1
-          let handleRequest = makeBucket(~store, ~getTime, ~initialTokens)
+          let capacity = 1
+          let handleRequest = makeBucket(~store, ~getTime, ~capacity)
 
           [() => request->handleRequest, () => request->handleRequest]
           ->inSeries
@@ -48,8 +48,8 @@ describe("Token Bucket Algorithm", () => {
           let requestIP1 = "ip.1"
           let requestIP2 = "ip.2"
           let getTime = () => 1000.0
-          let initialTokens = 1
-          let handleRequest = makeBucket(~store, ~getTime, ~initialTokens)
+          let capacity = 1
+          let handleRequest = makeBucket(~store, ~getTime, ~capacity)
 
           [
             () => requestIP1->handleRequest,
@@ -71,8 +71,8 @@ describe("Token Bucket Algorithm", () => {
     let store = InMemoryStore.make()
     let request = "some.ip"
     let getTime = () => 1000.0
-    let initialTokens = 0
-    let handleRequest = makeBucket(~store, ~getTime, ~initialTokens)
+    let capacity = 0
+    let handleRequest = makeBucket(~store, ~getTime, ~capacity)
     request
     ->handleRequest
     ->Promise.thenResolve(
@@ -91,8 +91,8 @@ describe("Token Bucket Algorithm", () => {
     let _timeBefore2Seconds = mockFn->MockJs.mockReturnValueOnce(Js.Undefined.return(1200.0))
     let _timeAfter2Seconds = mockFn->MockJs.mockReturnValueOnce(Js.Undefined.return(2000.0))
     let getTime = () => fn(.())->Js.Undefined.toOption->Option.getOr(0.0)
-    let initialTokens = 1
-    let handleRequest = makeBucket(~store, ~getTime, ~initialTokens)
+    let capacity = 1
+    let handleRequest = makeBucket(~store, ~getTime, ~capacity)
 
     [() => request->handleRequest, () => request->handleRequest, () => request->handleRequest]
     ->inSeries

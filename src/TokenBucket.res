@@ -9,21 +9,21 @@ open Store.InMemoryStore
 let makeBucket = (
   ~store: Store.InMemoryStore.t,
   ~getTime,
-  ~initialTokens,
+  ~capacity,
   request,
 ) => {
   store.get(request)
   ->Promise.then(data =>
     switch data {
     | None =>
-      initialTokens > 0
+      capacity > 0
       ? store.set(request, {
         requests: 1,
         firstRequestAt: getTime(),
       })->Promise.thenResolve(_ => Ok())
       : Promise.resolve(Error())
     | Some({ requests, firstRequestAt }) =>
-      let maxRequests = initialTokens + Utils.timeDiffInSeconds(Date.fromTime(getTime()), Date.fromTime(firstRequestAt))
+      let maxRequests = capacity + Utils.timeDiffInSeconds(Date.fromTime(getTime()), Date.fromTime(firstRequestAt))
       switch maxRequests - requests > 0 {
       | true => store.set(request, { requests: requests + 1, firstRequestAt })->Promise.thenResolve(_ => Ok())
       | false => Promise.resolve(Error())
