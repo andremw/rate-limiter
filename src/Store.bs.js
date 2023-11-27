@@ -15,18 +15,8 @@ function make(param) {
         };
 }
 
-async function get(dict, identifier) {
-  return dict[identifier];
-}
-
-async function set(dict, identifier, value) {
-  dict[identifier] = value;
-}
-
 var InMemoryStore = {
-  make: make,
-  get: get,
-  set: set
+  make: make
 };
 
 exports.InMemoryStore = InMemoryStore;

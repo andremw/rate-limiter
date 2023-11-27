@@ -17,11 +17,4 @@ module InMemoryStore = {
       },
     }
   }
-
-  let get = async (dict, identifier) =>
-    dict->Dict.get(identifier)
-
-  let set = async (dict, identifier, value) => {
-    dict->Dict.set(identifier, value)
-  }
 }
